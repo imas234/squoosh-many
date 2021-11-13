@@ -1,0 +1,14 @@
+{
+  "name": "squoosh-many",
+  "version": "1.0.0",
+  "description": "uses squoosh lib to compress all jpegs in a directory",
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
+  "author": "imas234",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@squoosh/lib": "^0.4.0"
+  }
+}
