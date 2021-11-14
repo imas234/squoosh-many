@@ -13,8 +13,11 @@ const getFilesInDirectory = async (path) => {
     }
 };
 
-const compress = async (imagePool, filepath, filename) => {
+const compress = async (filepath, filename) => {
     try {
+        const availableCores = cpus().length;
+        const imagePool = new ImagePool((availableCores / 2) || 1);
+
         const file  = await fs.readFile(filepath + filename);
         
         const image = imagePool.ingestImage(file);
@@ -48,6 +51,9 @@ const compress = async (imagePool, filepath, filename) => {
         const rawEncodedImage = (await image.encodedWith.mozjpeg).binary;
 
         await fs.writeFile(filepath + 'output/' + filename, rawEncodedImage);
+        
+        await imagePool.close();
+
         console.log('COMPRESSED IMAGE:', filename);
     } catch (e) {
         console.error('ERROR COMPRESSING IMAGE:', filename);
@@ -55,22 +61,21 @@ const compress = async (imagePool, filepath, filename) => {
 };
 
 const compressImages = async (filepath) => {
-    const availableCores = cpus().length;
-    console.log(filepath, availableCores);
-
-    const allowedFileExts = {
-        '.JPEG': true,
-        '.JPG': true,
-        '.PNG': true,
-    };
-    const files = await getFilesInDirectory(filepath);
-    const allowedFiles = files.filter((file) => (path.extname(file).toUpperCase() in allowedFileExts));
-    const imagePool = new ImagePool((availableCores / 2) || 1);
-
-    await Promise.all(
-        allowedFiles.map((filename) => compress(imagePool, filepath, filename))
-    );
-    await imagePool.close();
+    try {
+        const allowedFileExts = {
+            '.JPEG': true,
+            '.JPG': true,
+            '.PNG': true,
+        };
+        const files = await getFilesInDirectory(filepath);
+        const allowedFiles = files.filter((file) => (path.extname(file).toUpperCase() in allowedFileExts));
+    
+        for (const filename of allowedFiles) {
+            await compress(filepath, filename);
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 const inputPath = process.argv[2] || process.argv[1];
