@@ -69,6 +69,11 @@ const compress = async (filepath, filename) => {
 };
 
 const compressImages = async (filepath) => {
+    if (!filepath) {
+        console.error('NO FILEPATH PROVIDED');
+        return;
+    }
+
     try {
         const allowedFileExts = {
             '.JPEG': true,
@@ -91,7 +96,7 @@ const compressImages = async (filepath) => {
     }
 }
 
-const inputPath = process.argv[2] || process.argv[1];
+const inputPath = process.argv[2];
 compressImages(inputPath);
 // (async () => {
 // })()
