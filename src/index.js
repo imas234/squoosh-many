@@ -62,7 +62,7 @@ const compress = async (filepath, filename) => {
         
         await imagePool.close();
 
-        console.log('COMPRESSED IMAGE:', filename);
+        console.log('compressed image:', filename);
     } catch (e) {
         console.error('ERROR COMPRESSING IMAGE:', filename, e);
     }
