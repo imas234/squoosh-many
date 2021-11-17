@@ -3,6 +3,16 @@ import { cpus } from 'os';
 import path from 'path';
 import fs from 'fs/promises';
 
+const makeOutputDirectory = async (path) => {
+    try {
+        await fs.mkdir(path + 'output');
+    } catch (e) {
+        console.error('ERROR MAKING OUTPUT DIRECTORY:', e);
+    }
+};
+
+const getConsistentFilePath = (filepath) => filepath.charAt(filepath.length) === '/' ? filepath : (filepath + '/');
+
 const getFilesInDirectory = async (path) => {
     try {
         const files = await fs.readdir(path);
@@ -24,12 +34,6 @@ const compress = async (filepath, filename) => {
         await image.decoded; //Wait until the image is decoded before running preprocessors.
 
         const preprocessOptions = {
-            //When both width and height are specified, the image resized to specified size.
-            // resize: {
-            //     enabled: true,
-            //     width: 100,
-            //     height: 50,
-            // },        
             //When either width or height is specified, the image resized to specified size keeping aspect ratio.
             resize: {
                 enabled: true,
@@ -42,9 +46,6 @@ const compress = async (filepath, filename) => {
             mozjpeg: {
                 // quality: 75,
             }, //an empty object means 'use default settings'
-            // jxl: {
-            //     quality: 90,
-            // },
         };
         await image.encode(encodeOptions);
 
@@ -56,7 +57,7 @@ const compress = async (filepath, filename) => {
 
         console.log('COMPRESSED IMAGE:', filename);
     } catch (e) {
-        console.error('ERROR COMPRESSING IMAGE:', filename);
+        console.error('ERROR COMPRESSING IMAGE:', filename, e);
     }
 };
 
@@ -70,8 +71,13 @@ const compressImages = async (filepath) => {
         const files = await getFilesInDirectory(filepath);
         const allowedFiles = files.filter((file) => (path.extname(file).toUpperCase() in allowedFileExts));
     
+        const consistentPath = getConsistentFilePath(filepath);
+        if (allowedFiles.length) {
+            await makeOutputDirectory(consistentPath);
+        }
+
         for (const filename of allowedFiles) {
-            await compress(filepath, filename);
+            await compress(consistentPath, filename);
         }
     } catch (e) {
         console.error(e);
