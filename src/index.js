@@ -11,17 +11,23 @@ const makeOutputDirectory = async (path) => {
     }
 };
 
-const getConsistentFilePath = (filepath) => filepath.charAt(filepath.length) === '/' ? filepath : (filepath + '/');
-
 const getFilesInDirectory = async (path) => {
     try {
         const files = await fs.readdir(path);
         return files;
     } catch (e) {
-        console.error('ERROR READING FILES IN DIR', `${path}:`, e);
+        console.error('ERROR READING FILES IN DIRECTORY', `${path}:`, e);
         return [];
     }
 };
+
+const getConsistentFilePath = (filepath) => (
+    filepath.charAt(filepath.length) === '/' ? filepath : (filepath + '/')
+);
+
+const getClampedValue = (val, clamp = 1000) => (
+    val > clamp  ? clamp : val
+);
 
 const compress = async (filepath, filename) => {
     try {
@@ -31,13 +37,14 @@ const compress = async (filepath, filename) => {
         const file  = await fs.readFile(filepath + filename);
         
         const image = imagePool.ingestImage(file);
-        await image.decoded; //Wait until the image is decoded before running preprocessors.
+        const decoded = await image.decoded; //Wait until the image is decoded before running preprocessors.
 
+        const { width } = decoded.bitmap;
         const preprocessOptions = {
             //When either width or height is specified, the image resized to specified size keeping aspect ratio.
             resize: {
                 enabled: true,
-                width: 1000,
+                width: getClampedValue(width), // resizes images with > 1000 width to 1000 width
             }
         };
         await image.preprocess(preprocessOptions);
