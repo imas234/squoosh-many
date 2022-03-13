@@ -1,5 +1,5 @@
 # squoosh-many
-Cli tool that uses [@squoosh/lib](https://github.com/GoogleChromeLabs/squoosh/tree/dev/libsquoosh) to compress all images in a given directory into an output folder.
+Script that uses [@squoosh/lib](https://github.com/GoogleChromeLabs/squoosh/tree/dev/libsquoosh) to compress all images in a given directory into an output folder.
 
 Images are also resized to have a width of 1000 if their width is greater than 1000. Smaller images are unaffected.
 
